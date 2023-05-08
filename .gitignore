@@ -21,3 +21,6 @@ __pycache__
 
 # build
 build
+
+# wav files
+*.wav

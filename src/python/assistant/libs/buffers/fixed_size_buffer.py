@@ -55,4 +55,4 @@ class FixedAudioBuffer(FixedSizeBuffer):
     """
     def __init__(self, buffer_time_seconds: int, sample_rate_hz: int):
         buffer_size = buffer_time_seconds*sample_rate_hz
-        super().__init__(self, buffer_size)
+        super().__init__(buffer_size)
