@@ -54,6 +54,7 @@ class FixedAudioBuffer(FixedSizeBuffer):
             sample_rate_hz (int): Sample rate of incoming audio.
 
     """
-    def __init__(self, buffer_time_seconds: int, sample_rate_hz: int):
-        buffer_size = int(buffer_time_seconds*sample_rate_hz)
-        super().__init__(buffer_size)
+    def __init__(self, buffer_time_seconds: int, sample_rate_hz: int, dtype=np.int16):
+        bytes_per_element = dtype().itemsize
+        buffer_size = int(buffer_time_seconds*sample_rate_hz/bytes_per_element*2)
+        super().__init__(buffer_size, dtype)

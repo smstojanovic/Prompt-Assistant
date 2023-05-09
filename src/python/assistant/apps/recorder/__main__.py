@@ -11,7 +11,8 @@ SAMPLE_RATE = 48000
 USE_THREAD = True # uses threads or processes
 
 # Initialize fixed buffer
-audio_buffer = FixedAudioBuffer(RECORDING_SECONDS, SAMPLE_RATE)
+# TODO: use the same datatype everywhere.
+audio_buffer = FixedAudioBuffer(RECORDING_SECONDS, SAMPLE_RATE, dtype=np.int16)
 audio_collector = AudioCollector()
 audio_processor = AudioProcessor(SAMPLE_RATE)
 
@@ -20,21 +21,21 @@ processor_thread = audio_processor.process_audio(audio_buffer, use_thread=USE_TH
 
 
 audio_thread.join()
-processor_thread.join()
+#processor_thread.join()
 
 audio_collector.stop_recording()
-#audio_processor.stop_processing()
+audio_processor.stop_processing()
 import wave
 # save to wave file.
 wav_output_filename = 'test1.wav'
 audio_np = audio_buffer.get()
-audio_np = resampled
+#audio_np = resampled
 SAMPLE_RATE = 48000
-SAMPLE_RATE = 16000
+#SAMPLE_RATE = 16000
 #audio_bytes = wave.struct.pack("<" + str(len(audio_np)) + "h", *audio_np)
 
 with wave.open(wav_output_filename, 'wb') as wav_file:
     wav_file.setnchannels(1)
-    wav_file.setsampwidth(4)
+    wav_file.setsampwidth(2)
     wav_file.setframerate(SAMPLE_RATE)
     wav_file.writeframes(audio_np)
