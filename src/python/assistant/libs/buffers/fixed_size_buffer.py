@@ -5,14 +5,15 @@ class FixedSizeBuffer:
         Creates a buffer with a fixed size. Any chunk that will overflow the buffer will push older data out. 
         This is meant for a continuous audio stream so we can poll that last N seconds from a microphone reading.
     """
-    def __init__(self, buffer_size):
+    def __init__(self, buffer_size, dtype=np.int16):
         self.buffer_size = buffer_size
-        self.buffer = np.zeros(buffer_size, dtype=np.float32)
+        self.dtype = dtype
+        self.buffer = np.zeros(buffer_size, dtype=dtype)
         self.write_index = 0
 
     def push(self, data):
         # Convert data to numpy array
-        audio_samples = np.frombuffer(data, dtype=np.float32)
+        audio_samples = np.frombuffer(data, dtype=self.dtype)
 
         # Determine how much space is available in the buffer
         space_left = self.buffer_size - self.write_index
@@ -38,7 +39,7 @@ class FixedSizeBuffer:
         if samples_tail < self.write_index:
             return self.buffer[samples_tail:self.write_index]
         else:
-            samples = np.zeros(num_samples, dtype=np.float32)
+            samples = np.zeros(num_samples, dtype=self.dtype)
             samples[:self.buffer_size - samples_tail] = self.buffer[samples_tail:]
             samples[self.buffer_size - samples_tail:self.write_index - samples_tail] = self.buffer[:self.write_index - samples_tail]
             return samples
@@ -54,5 +55,5 @@ class FixedAudioBuffer(FixedSizeBuffer):
 
     """
     def __init__(self, buffer_time_seconds: int, sample_rate_hz: int):
-        buffer_size = int(buffer_time_seconds*sample_rate_hz/2)
+        buffer_size = int(buffer_time_seconds*sample_rate_hz)
         super().__init__(buffer_size)

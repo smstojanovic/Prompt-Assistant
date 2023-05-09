@@ -1,6 +1,7 @@
 import pyaudio
 import threading
 import multiprocessing
+import numpy as np
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
 
 class AudioCollector:
@@ -31,6 +32,7 @@ class AudioCollector:
         #format = pyaudio.paFloat32
         # need to parameterise this later.
         format = pyaudio.paInt16
+        #format = pyaudio.paInt32
         channels = 1
         dev_index = 1
 
@@ -64,7 +66,12 @@ class AudioCollector:
             # Read audio data from stream
             try:
                 audio_data = stream.read(chunk_size, exception_on_overflow = False)
-                audio_buffer.push(audio_data)
+                # Convert the audio data to a NumPy array
+                audio_samples = np.frombuffer(audio_data, dtype=np.int16)
+                # Remove non-finite values from the audio data
+                audio_samples_finite = audio_samples[np.isfinite(audio_samples)]
+                # Push the audio data into the buffer
+                audio_buffer.push(audio_samples_finite)
             except Exception as ex:
                 print("Recording ended")
                 stream.stop_stream()

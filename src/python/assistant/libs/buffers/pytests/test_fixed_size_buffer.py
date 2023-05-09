@@ -8,7 +8,7 @@ BUFFER_SIZE = 1024
 @pytest.fixture
 def buffer():
     buffer_size = BUFFER_SIZE*3
-    return FixedSizeBuffer(buffer_size)
+    return FixedSizeBuffer(buffer_size, dtype=np.float32)
 
 
 def test_fixed_size_buffer_push_and_get(buffer):
