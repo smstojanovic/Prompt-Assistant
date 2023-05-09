@@ -26,7 +26,7 @@ class FixedSizeBuffer:
             rollsize = len(audio_samples) - space_left
             self.buffer = np.roll(self.buffer,-1*rollsize)
             self.buffer[-1*len(audio_samples):] = audio_samples
-            self.write_index = max(self.buffer_size, self.write_index + len(audio_samples) - space_left)
+            self.write_index = self.buffer_size
 
     def get(self, num_samples=None):
         # If num_samples is greater than buffer size or none, return the entire buffer
@@ -54,5 +54,5 @@ class FixedAudioBuffer(FixedSizeBuffer):
 
     """
     def __init__(self, buffer_time_seconds: int, sample_rate_hz: int):
-        buffer_size = buffer_time_seconds*sample_rate_hz
+        buffer_size = int(buffer_time_seconds*sample_rate_hz/2)
         super().__init__(buffer_size)

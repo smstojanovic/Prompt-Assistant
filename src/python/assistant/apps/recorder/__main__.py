@@ -1,62 +1,38 @@
 import pyaudio
 import numpy as np
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
+from assistant.apps.recorder.audio_collector import AudioCollector
+from assistant.apps.recorder.audio_processor import AudioProcessor
 import wave
 
-CHUNK_SIZE = 4096
+CHUNK_SIZE = 9600
 RECORDING_SECONDS = 3
 SAMPLE_RATE = 48000
+USE_THREAD = True # uses threads or processes
 
-# Initialize ring buffer
+# Initialize fixed buffer
 audio_buffer = FixedAudioBuffer(RECORDING_SECONDS, SAMPLE_RATE)
+audio_collector = AudioCollector()
+audio_processor = AudioProcessor()
 
-# Initialize PyAudio
-audio = pyaudio.PyAudio()
+audio_thread = audio_collector.record_audio(audio_buffer, SAMPLE_RATE, CHUNK_SIZE, use_thread=USE_THREAD)
+processor_thread = audio_processor.process_audio(audio_buffer, use_thread=USE_THREAD)
 
-for i in range(audio.get_device_count()):
-    dev = audio.get_device_info_by_index(i)
-    print((i, dev['name'], dev['maxInputChannels']), dev['defaultSampleRate'])    
 
-#format = pyaudio.paFloat32
-format = pyaudio.paInt16
-channels = 1
-dev_index = 1
+audio_thread.join()
+processor_thread.join()
 
-stream = audio.open(format=format,
-                    channels=channels,
-                    rate=SAMPLE_RATE,
-                    input_device_index = dev_index,
-                    input=True,
-                    frames_per_buffer=CHUNK_SIZE)
-
-# Start streaming audio
-print("Recording started")
-
-while True:
-    # Read audio data from stream
-    try:
-        audio_data = stream.read(CHUNK_SIZE, exception_on_overflow = False)
-        audio_buffer.push(audio_data)
-    except Exception as ex:
-        stream.stop_stream()
-        stream.close()
-        audio.terminate()
-        break
-    # Process audio data or do other logic here
-    # ...
-
+audio_collector.stop_recording()
+#audio_processor.stop_processing()
+import wave
 # save to wave file.
 wav_output_filename = 'test1.wav'
 audio_np = audio_buffer.get()
+SAMPLE_RATE = 48000
 #audio_bytes = wave.struct.pack("<" + str(len(audio_np)) + "h", *audio_np)
 
 with wave.open(wav_output_filename, 'wb') as wav_file:
-    wav_file.setnchannels(channels)
+    wav_file.setnchannels(1)
     wav_file.setsampwidth(2)
     wav_file.setframerate(SAMPLE_RATE)
     wav_file.writeframes(audio_np)
-
-# Stop streaming audio
-stream.stop_stream()
-stream.close()
-audio.terminate()
