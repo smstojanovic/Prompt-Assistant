@@ -1,0 +1,26 @@
+# env files and secrets
+.env
+
+# virtual environments
+.data_collection_env
+.tmpvenv
+.pytestenv
+.venv
+
+# config files
+*.cnfg.loc.json
+*.cnfg.tst.json
+*.cnfg.prd.json
+
+# pycache
+__pycache__
+
+#  logs
+.logs
+.*logs
+
+# build
+build
+
+# wav files
+*.wav
