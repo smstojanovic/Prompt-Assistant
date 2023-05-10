@@ -8,10 +8,11 @@ import librosa
 import samplerate
 
 class AudioProcessor:
-    def __init__(self, sample_rate:int, process_interval_seconds:float = 0.5, compress=True):
+    def __init__(self, sample_rate:int, dtype, process_interval_seconds:float = 0.5, compress=True):
         self.processing_enabled = True
         self.sample_rate = sample_rate
         self.process_interval_seconds = process_interval_seconds
+        self.dtype=dtype
         
         # depending on network and processing power of the device, it may or may not be worthwhile
         # compressing the audio before it goes to the model. Will need to test this.
@@ -60,6 +61,7 @@ class AudioProcessor:
             audio = audio.astype(np.float32)
 
             resampled = librosa.resample(audio, orig_sr=self.sample_rate, target_sr=target_sample_rate)
+            resampled = resampled.astype(self.dtype)
             # resampling_ratio = target_sample_rate / self.sample_rate
             # resampler = samplerate.Resampler('sinc_best')
             # resampled = resampler.process(audio, resampling_ratio)
