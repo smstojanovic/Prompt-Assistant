@@ -1,1 +1,1 @@
-torch serve —-start —-ts-config torchserve.config -—model-store /home/model-server/model-store -—models jenkins_prompt=jenkins_prompt.mar
+torch-serve --start --ts-config torchserve.config -—model-store /home/model-server/model-store -—models jenkins_prompt=jenkins_prompt.mar

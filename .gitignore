@@ -18,9 +18,15 @@ __pycache__
 #  logs
 .logs
 .*logs
+*.log
+*.cfg
 
 # build
 build
 
 # wav files
 *.wav
+
+# models
+*.mar
+model_store
