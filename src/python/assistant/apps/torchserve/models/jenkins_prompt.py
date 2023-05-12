@@ -31,7 +31,7 @@ class AudioTranscriptionHandler(BaseHandler, ABC):
         self.initialized = True
 
     def preprocess(self, data):
-        print(data)
+        #print(data)
         if type(data) == list:
             data = data[0]['body']
 
@@ -40,19 +40,18 @@ class AudioTranscriptionHandler(BaseHandler, ABC):
         compression = data.get('compression')
 
         audio_data = np.array(audio, dtype=DTYPE_MAP.get(dtype, np.float32))
+        audio_data = audio_data.flatten() / 32768.0
 
         # if compression:
         #     # uncompress. handle this later.
         #     pass
 
-        audio_data = whisper.pad_or_trim(audio_data)
-
         return audio_data
 
     def inference(self, inputs):
         with torch.no_grad():
-            mel = whisper.log_mel_spectrogram(inputs).to(self.model.device)
-            prediction = self.model.transcribe(mel)
+            #mel = whisper.log_mel_spectrogram(inputs).to(self.model.device)
+            prediction = self.model.transcribe(inputs)
 
         prediction = prediction["text"]
 

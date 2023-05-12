@@ -19,6 +19,7 @@ __pycache__
 .logs
 .*logs
 *.log
+*.log.gz
 *.cfg
 
 # build

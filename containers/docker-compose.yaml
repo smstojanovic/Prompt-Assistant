@@ -1,0 +1,29 @@
+version : '3.8'
+
+services:
+  torchserve:
+    image: assistant/torchserve
+    container_name: torchserve
+    build:
+      context: ..
+      dockerfile: ./containers/dockerfiles/Dockerfile.torchserve
+      args:
+        APP_ENV: ${APP_ENV:-test}
+    runtime: nvidia
+    command: torchserve --start --ts-config /usr/src/torchserve.config --model-store /usr/src/model-store
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+      - target: 8081
+        published: 8081
+        protocol: tcp
+        mode: host
+      - target: 8082
+        published: 8082
+        protocol: tcp
+        mode: host
+    restart: unless-stopped
+    extra_hosts:
+      - host.docker.internal:host-gateway

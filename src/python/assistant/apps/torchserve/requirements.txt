@@ -1,4 +1,4 @@
-torch==2.0.0
-torchaudio==2.0.1
-torchvision==0.6.1
+#torch==2.0.0+cu118
+#torchaudio==2.0.1
 openai-whisper==20230314
+pyyaml
