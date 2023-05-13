@@ -1,4 +1,5 @@
 import numpy as np
+from assistant.libs.buffers.audio_utils import save_audio
 
 class BufferWithQuiet:
     """
@@ -93,3 +94,6 @@ class AudioBufferWithQuiet(BufferWithQuiet):
 
     def time_written(self):
         return self.write_index/self.sample_rate*self.bytes_per_element/2
+    
+    def save(self, filename):
+        save_audio(self.buffer, filename, self.sample_rate)

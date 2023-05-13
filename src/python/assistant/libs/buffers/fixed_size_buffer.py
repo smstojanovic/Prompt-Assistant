@@ -1,4 +1,5 @@
 import numpy as np
+from assistant.libs.buffers.audio_utils import save_audio
 
 class FixedSizeBuffer:
     """
@@ -72,3 +73,6 @@ class FixedAudioBuffer(FixedSizeBuffer):
 
     def time_written(self):
         return 3
+    
+    def save(self, filename):
+        save_audio(self.get(), filename, self.sample_rate)

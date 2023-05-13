@@ -1,6 +1,7 @@
 from enum import Enum
 from assistant.libs.buffers.buffer_with_quiet import AudioBufferWithQuiet
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
+from assistant.libs.buffers.audio_utils import save_audio
 
 class BufferMode(Enum):
     SILENCE = 1
@@ -28,6 +29,9 @@ class SilenceBuffer:
     
     def time_written(self):
         return 0
+    
+    def save_audio(self, filename):
+        return
 
 class AudioBufferHandler:
     """
@@ -66,3 +70,6 @@ class AudioBufferHandler:
     def reset(self):
         for buffer in self.buffers.values():
             buffer.reset()
+
+    def save(self, filename):
+        return self.buffers[self.mode].save(filename)

@@ -3,7 +3,7 @@ import threading
 import multiprocessing
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
 from assistant.libs.compression.audio_compressor import FLACAudioCompressor
-from assistant.apps.recorder.ts_interface.ts_client import JenkinsPromptClient, JenkinsListenClient
+from assistant.apps.recorder.model_interface.ts_client import JenkinsPromptClient, JenkinsListenClient
 from assistant.apps.recorder.prompt.prompt_discriminator import PromptDiscriminator
 from assistant.libs.buffers.audio_buffer_handler import BufferMode
 import time

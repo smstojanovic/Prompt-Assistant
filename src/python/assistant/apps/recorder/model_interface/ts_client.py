@@ -45,5 +45,5 @@ class JenkinsPromptClient(TorchserveClient):
         return result['transcribed_text']
     
 class JenkinsListenClient(JenkinsPromptClient):
-    #MODEL_NAME = 'jenkins_listen'
-    MODEL_NAME = 'jenkins_prompt'
+    MODEL_NAME = 'jenkins_listen'
+    #MODEL_NAME = 'jenkins_prompt'
