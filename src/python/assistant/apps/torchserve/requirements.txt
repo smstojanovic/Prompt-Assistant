@@ -1,0 +1,4 @@
+#torch==2.0.0+cu118
+#torchaudio==2.0.1
+openai-whisper==20230314
+pyyaml
