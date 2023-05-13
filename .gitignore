@@ -31,3 +31,5 @@ build
 # models
 *.mar
 model_store
+=======
+*.wav
