@@ -43,6 +43,16 @@ class FixedSizeBuffer:
             samples[:self.buffer_size - samples_tail] = self.buffer[samples_tail:]
             samples[self.buffer_size - samples_tail:self.write_index - samples_tail] = self.buffer[:self.write_index - samples_tail]
             return samples
+        
+    def ready(self):
+        """
+            Used for prompting the listener. Only start working when buffer is full
+        """
+        return self.write_index >= self.buffer_size
+    
+    def reset(self):
+        self.buffer = np.zeros(self.buffer_size, dtype=self.dtype)
+        self.write_index = 0
 
 class FixedAudioBuffer(FixedSizeBuffer):
     """
@@ -56,5 +66,9 @@ class FixedAudioBuffer(FixedSizeBuffer):
     """
     def __init__(self, buffer_time_seconds: int, sample_rate_hz: int, dtype=np.int16):
         bytes_per_element = dtype().itemsize
+        self.sample_rate_hz = sample_rate_hz
         buffer_size = int(buffer_time_seconds*sample_rate_hz/bytes_per_element*2)
         super().__init__(buffer_size, dtype)
+
+    def time_written(self):
+        return 3

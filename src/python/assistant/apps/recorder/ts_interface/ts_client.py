@@ -40,4 +40,10 @@ class JenkinsPromptClient(TorchserveClient):
         }
 
         result = self.send_request(json_data)
+        if result is None:
+            return None
         return result['transcribed_text']
+    
+class JenkinsListenClient(JenkinsPromptClient):
+    #MODEL_NAME = 'jenkins_listen'
+    MODEL_NAME = 'jenkins_prompt'

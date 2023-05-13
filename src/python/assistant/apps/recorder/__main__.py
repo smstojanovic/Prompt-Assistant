@@ -4,6 +4,8 @@ from assistant.apps.recorder.utils.config_loader import ConfigReader
 cnfg = ConfigReader()
 
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
+from assistant.libs.buffers.buffer_with_quiet import AudioBufferWithQuiet
+from assistant.libs.buffers.audio_buffer_handler import AudioBufferHandler
 from assistant.apps.recorder.audio_collector import AudioCollector
 from assistant.apps.recorder.audio_processor import AudioProcessor
 
@@ -11,7 +13,10 @@ import wave
 import pyaudio
 
 CHUNK_SIZE = 4800
-RECORDING_SECONDS = 3
+PRMOPT_RECORDING_SECONDS = 3
+LISTEN_RECORDING_SECONDS = 30
+LISTEN_QUIET_FILTER_SECONDS = 2
+LISTEN_QUIET_THRESHOLD = 0.5
 SAMPLE_RATE = 48000
 USE_THREAD = True # uses threads or processes
 dtype = np.int16
@@ -20,8 +25,10 @@ format = pyaudio.paInt16
 
 
 # Initialize fixed buffer
-# TODO: use the same datatype everywhere.
-audio_buffer = FixedAudioBuffer(RECORDING_SECONDS, SAMPLE_RATE, dtype=dtype)
+prompt_buffer = FixedAudioBuffer(PRMOPT_RECORDING_SECONDS, SAMPLE_RATE, dtype=dtype)
+listen_buffer = AudioBufferWithQuiet(LISTEN_RECORDING_SECONDS, SAMPLE_RATE, dtype, LISTEN_QUIET_FILTER_SECONDS, LISTEN_QUIET_THRESHOLD)
+audio_buffer = AudioBufferHandler(prompt_buffer, listen_buffer)
+
 audio_collector = AudioCollector(dtype=dtype)
 audio_processor = AudioProcessor(SAMPLE_RATE, dtype=dtype)
 
