@@ -1,8 +1,12 @@
 import pyaudio
 import numpy as np
+from assistant.apps.recorder.utils.config_loader import ConfigReader
+cnfg = ConfigReader()
+
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
 from assistant.apps.recorder.audio_collector import AudioCollector
 from assistant.apps.recorder.audio_processor import AudioProcessor
+
 import wave
 import pyaudio
 
@@ -12,6 +16,8 @@ SAMPLE_RATE = 48000
 USE_THREAD = True # uses threads or processes
 dtype = np.int16
 format = pyaudio.paInt16
+
+
 
 # Initialize fixed buffer
 # TODO: use the same datatype everywhere.

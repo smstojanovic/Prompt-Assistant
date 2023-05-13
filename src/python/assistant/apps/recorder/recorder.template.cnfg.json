@@ -1,0 +1,6 @@
+{
+    "torchserve" : {
+        "host" : "<hostname>",
+        "port" : "<port>"
+    }
+}

@@ -3,9 +3,15 @@ import threading
 import multiprocessing
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
 from assistant.libs.compression.audio_compressor import FLACAudioCompressor
+from assistant.apps.recorder.ts_interface.ts_client import JenkinsPromptClient
+from assistant.apps.recorder.prompt.prompt_discriminator import PromptDiscriminator
 import time
+from datetime import datetime
 import librosa
 import samplerate
+
+from assistant.apps.recorder.utils.config_loader import ConfigReader
+cnfg = ConfigReader()
 
 class AudioProcessor:
     def __init__(self, sample_rate:int, dtype, process_interval_seconds:float = 0.5, compress=True):
@@ -17,6 +23,8 @@ class AudioProcessor:
         # depending on network and processing power of the device, it may or may not be worthwhile
         # compressing the audio before it goes to the model. Will need to test this.
         self.do_compress=True
+        self.prompt_client = JenkinsPromptClient()
+        self.prompt_discriminator = PromptDiscriminator()
 
     def stop_processing(self):
         """
@@ -48,6 +56,7 @@ class AudioProcessor:
         while self.processing_enabled:
 
             time.sleep(self.process_interval_seconds)
+            loop_start_time = datetime.now()
 
             # wait till the buffer is full
             if audio_buffer.write_index < audio_buffer.buffer_size:
@@ -77,7 +86,17 @@ class AudioProcessor:
 
 
             # send to transcription model
-            x = 1
+            loop_inference_time = datetime.now()
+            processing_time = loop_inference_time - loop_start_time
+
+            # if the loop time is fast enough and everything is warmed up; start sending to model.
+            if processing_time.seconds == 0 and processing_time.microseconds < 1e5:
+                prompt_data = resampled.tolist()
+                transcribed_speech = self.prompt_client.do_inference(prompt_data, self.do_compress)
+                is_prompt = self.prompt_discriminator.check_prompt(transcribed_speech)
+                if is_prompt:
+                    x = 1
+
 
 
 # import wave
