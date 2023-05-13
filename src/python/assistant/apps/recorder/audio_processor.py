@@ -6,6 +6,7 @@ from assistant.libs.compression.audio_compressor import FLACAudioCompressor
 from assistant.apps.recorder.model_interface.ts_client import JenkinsPromptClient, JenkinsListenClient
 from assistant.apps.recorder.prompt.prompt_discriminator import PromptDiscriminator
 from assistant.libs.buffers.audio_buffer_handler import BufferMode
+from assistant.apps.recorder.model_interface.chatgpt_interface import ChatGPTInterface
 import time
 from datetime import datetime
 import librosa
@@ -27,6 +28,8 @@ class AudioProcessor:
         self.prompt_client = JenkinsPromptClient()
         self.listen_client = JenkinsListenClient()
         self.prompt_discriminator = PromptDiscriminator()
+
+        self.main_chatgpt_interface = ChatGPTInterface()
 
         self.mode_process_map = {
             BufferMode.PROMPT : self._process_prompt,
@@ -144,13 +147,20 @@ class AudioProcessor:
             transcribed_speech = self.listen_client.do_inference(prompt_data, self.do_compress)
             #is_prompt = self.prompt_discriminator.check_prompt(transcribed_speech)
             if transcribed_speech:
-                print('Prompting...')
+                print('Thinking...')
                 audio_buffer.reset()
-                audio_buffer.set_mode(BufferMode.PROMPT)
+                audio_buffer.set_mode(BufferMode.SILENCE)
+                self.main_chatgpt_interface.preload_user_message(transcribed_speech)
 
     def _process_silence(self, audio_buffer, target_sample_rate):
 
-        time.sleep(1)
+        #time.sleep(1)
+        # go to our get speech from LLM.
+        chatgpt_response = self.main_chatgpt_interface.chat()
+        print('Responding...')
+        # add in text to speech model here and output to audio device
+
+        print('Prompting...')
         audio_buffer.set_mode(BufferMode.PROMPT)
 
 # import wave

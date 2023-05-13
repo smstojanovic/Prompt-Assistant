@@ -24,7 +24,7 @@ class TorchserveClient(ABC):
             print(f"Request failed: {e}")
 
 class JenkinsPromptClient(TorchserveClient):
-    MODEL_NAME = 'jenkins_prompt'
+    MODEL_NAME = 'jenkins_listen'
 
     def do_inference(self, data, compressed):
         if type(data) != list:
