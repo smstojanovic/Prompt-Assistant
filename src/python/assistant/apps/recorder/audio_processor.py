@@ -1,9 +1,10 @@
 import numpy as np
 import threading
 import multiprocessing
+import pyaudio
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
 from assistant.libs.compression.audio_compressor import FLACAudioCompressor
-from assistant.apps.recorder.model_interface.ts_client import JenkinsPromptClient, JenkinsListenClient
+from assistant.apps.recorder.model_interface.ts_client import JenkinsPromptClient, JenkinsListenClient, JenkinsSpeechClient
 from assistant.apps.recorder.prompt.prompt_discriminator import PromptDiscriminator
 from assistant.libs.buffers.audio_buffer_handler import BufferMode
 from assistant.apps.recorder.model_interface.chatgpt_interface import ChatGPTInterface
@@ -11,6 +12,15 @@ import time
 from datetime import datetime
 import librosa
 import samplerate
+import nltk
+
+# Download the necessary resources for sentence tokenization
+nltk.download('punkt')
+
+def split_sentences(text):
+    sentences = nltk.sent_tokenize(text)
+    return sentences
+
 
 from assistant.apps.recorder.utils.config_loader import ConfigReader
 cnfg = ConfigReader()
@@ -27,6 +37,7 @@ class AudioProcessor:
         self.do_compress=True
         self.prompt_client = JenkinsPromptClient()
         self.listen_client = JenkinsListenClient()
+        self.speech_client = JenkinsSpeechClient()
         self.prompt_discriminator = PromptDiscriminator()
 
         self.main_chatgpt_interface = ChatGPTInterface()
@@ -158,10 +169,40 @@ class AudioProcessor:
         # go to our get speech from LLM.
         chatgpt_response = self.main_chatgpt_interface.chat()
         print('Responding...')
+        chatgpt_sentences = split_sentences(chatgpt_response)
         # add in text to speech model here and output to audio device
+        for sentence in chatgpt_sentences:
+            audio_data = self.speech_client.do_inference(sentence)
+            audio_output(**audio_data)
 
         print('Prompting...')
         audio_buffer.set_mode(BufferMode.PROMPT)
+
+
+def audio_output(speech, sample_rate):
+    # Create PyAudio object
+    audio_data = np.array(speech, dtype=np.float32)
+    p = pyaudio.PyAudio()
+
+    channels = 1
+
+    # Open audio stream for playback
+    stream = p.open(
+        format=p.get_format_from_width(audio_data.dtype.itemsize),
+        channels=channels,
+        rate=sample_rate,
+        output=True
+    )
+
+    # Write audio data to the stream
+    stream.write(audio_data.tobytes())
+
+    # Wait for the stream to finish playing
+    stream.stop_stream()
+    stream.close()
+
+    # Terminate PyAudio object
+    p.terminate()
 
 # import wave
 # # save to wave file.
