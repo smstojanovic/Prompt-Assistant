@@ -1,6 +1,7 @@
 import requests
 from abc import ABC
 from assistant.apps.recorder.utils.config_loader import ConfigReader
+import json
 cnfg = ConfigReader()
 
 class TorchserveClient(ABC):
@@ -24,7 +25,7 @@ class TorchserveClient(ABC):
             print(f"Request failed: {e}")
 
 class JenkinsPromptClient(TorchserveClient):
-    MODEL_NAME = 'jenkins_listen'
+    MODEL_NAME = 'jenkins_prompt'
 
     def do_inference(self, data, compressed):
         if type(data) != list:
@@ -45,5 +46,22 @@ class JenkinsPromptClient(TorchserveClient):
         return result['transcribed_text']
     
 class JenkinsListenClient(JenkinsPromptClient):
-    MODEL_NAME = 'jenkins_listen'
-    #MODEL_NAME = 'jenkins_prompt'
+    #MODEL_NAME = 'jenkins_listen'
+    MODEL_NAME = 'jenkins_prompt'
+
+class JenkinsSpeechClient(TorchserveClient):
+    MODEL_NAME = 'jenkins_speak'
+
+    def do_inference(self, data):
+        if type(data) != str:
+            raise Exception('data needs to be a string')
+
+        json_data = {
+            'input_text' : data
+        }
+
+        result = self.send_request(json_data)
+        if result is None:
+            return None
+        return result
+    
