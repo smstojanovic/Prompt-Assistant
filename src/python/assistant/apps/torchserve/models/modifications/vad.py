@@ -12,15 +12,14 @@ class InMemoryVAD(VAD):
         """Outputs the frame-level speech probability of the input audio file
         using the neural model specified in the hparam file. To make this code
         both parallelizable and scalable to long sequences, it uses a
-        double-windowing approach.  First, we sequentially read non-overlapping
-        large chunks of the input signal.  We then split the large chunks into
+        double-windowing approach. First, we sequentially read non-overlapping
+        large chunks of the input signal. We then split the large chunks into
         smaller chunks and we process them in parallel.
 
         Arguments
         ---------
-        audio_file: path
-            Path of the audio file containing the recording. The file is read
-            with torchaudio.
+        audio_file: BytesIO
+            BytesIO object containing the audio file data.
         large_chunk_size: float
             Size (in seconds) of the large chunks that are read sequentially
             from the input audio file.
@@ -156,19 +155,17 @@ class InMemoryVAD(VAD):
 
         Arguments
         ---------
-        audio_file: path
-            Path of the audio file containing the recording. The file is read
-            with torchaudio.
+        audio_file: BytesIO
+            BytesIO object containing the audio file data.
         boundaries : torch.Tensor
             Tensor containing the speech boundaries. It can be derived using the
             get_boundaries method.
         activation_th: float
-            A new speech segment is started it the energy is above activation_th.
+            A new speech segment is started if the energy is above activation_th.
         deactivation_th: float
             The segment is considered ended when the energy is <= deactivation_th.
         eps: float
             Small constant for numerical stability.
-
 
         Returns
         -------
@@ -248,8 +245,8 @@ class InMemoryVAD(VAD):
         ---------
         boundaries: torch.Tensor
             Tensor containing the boundaries of the speech segments.
-        audio_file: path
-            The original audio file used to compute vad_out.
+        audio_file: BytesIO
+            BytesIO object containing the audio file data.
         speech_th: float
             Threshold on the mean posterior probability over which speech is
             confirmed. Below that threshold, the segment is re-assigned to a
@@ -304,9 +301,9 @@ class InMemoryVAD(VAD):
     ):
         """Detects speech segments within the input file. The input signal can
         be both a short or a long recording. The function computes the
-        posterior probabilities on large chunks (e.g, 30 sec), that are read
+        posterior probabilities on large chunks (e.g., 30 sec), that are read
         sequentially (to avoid storing big signals in memory).
-        Each large chunk is, in turn, split into smaller chunks (e.g, 10 seconds)
+        Each large chunk is, in turn, split into smaller chunks (e.g., 10 seconds)
         that are processed in parallel. The pipeline for detecting the speech
         segments is the following:
             1- Compute posteriors probabilities at the frame level.
@@ -315,13 +312,12 @@ class InMemoryVAD(VAD):
             4- Apply energy VAD within each candidate segment (optional).
             5- Merge segments that are too close.
             6- Remove segments that are too short.
-            7- Double check speech segments (optional).
-
+            7- Double-check speech segments (optional).
 
         Arguments
         ---------
-        audio_file : str
-            Path to audio file.
+        audio_file : BytesIO
+            BytesIO object containing the audio file data.
         large_chunk_size: float
             Size (in seconds) of the large chunks that are read sequentially
             from the input audio file.
@@ -334,23 +330,23 @@ class InMemoryVAD(VAD):
             The probabilities of the overlapped chunks are combined using
             hamming windows.
         apply_energy_VAD: bool
-            If True, a energy-based VAD is used on the detected speech segments.
+            If True, an energy-based VAD is used on the detected speech segments.
             The neural network VAD often creates longer segments and tends to
             merge close segments together. The energy VAD post-processes can be
             useful for having a fine-grained voice activity detection.
-            The energy thresholds is  managed by activation_th and
+            The energy thresholds are managed by activation_th and
             deactivation_th (see below).
         double_check: bool
             If True, double checks (using the neural VAD) that the candidate
             speech segments actually contain speech. A threshold on the mean
             posterior probabilities provided by the neural network is applied
             based on the speech_th parameter (see below).
-        activation_th:  float
+        activation_th: float
             Threshold of the neural posteriors above which starting a speech segment.
         deactivation_th: float
             Threshold of the neural posteriors below which ending a speech segment.
         en_activation_th: float
-            A new speech segment is started it the energy is above activation_th.
+            A new speech segment is started if the energy is above activation_th.
             This is active only if apply_energy_VAD is True.
         en_deactivation_th: float
             The segment is considered ended when the energy is <= deactivation_th.
@@ -371,7 +367,7 @@ class InMemoryVAD(VAD):
         boundaries: torch.Tensor
             Tensor containing the start second of speech segments in even
             positions and their corresponding end in odd positions
-            (e.g, [1.0, 1.5, 5,.0 6.0] means that we have two speech segment;
+            (e.g., [1.0, 1.5, 5, 0, 6.0] means that we have two speech segment;
              one from 1.0 to 1.5 seconds and another from 5.0 to 6.0 seconds).
         """
 
