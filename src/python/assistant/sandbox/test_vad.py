@@ -495,8 +495,61 @@ class BytesVAD(VAD):
 
         return boundaries
 # %%
+audio_file = "../../../../test1.wav"
+from datetime import datetime
+#model = whisper.load_model("base")
+#model = whisper.load_model("tiny.en")
+
+import wave
+import numpy as np
+
+# load audio and pad/trim it to fit 30 seconds
+
+# Open the WAV file
+with wave.open(audio_file, 'rb') as wav_file:
+    # Get the number of audio channels
+    channels = wav_file.getnchannels()
+    # Get the sample width (in bytes)
+    sample_width = wav_file.getsampwidth()
+    # Get the frame rate (number of frames per second)
+    frame_rate = wav_file.getframerate()
+    # Get the number of audio frames in the file
+    num_frames = wav_file.getnframes()
+    # Read all the audio frames from the file
+    raw_data = wav_file.readframes(num_frames)
+
+# Convert the raw data to a numpy array
+dtype_map = {1: np.int8, 2: np.int16, 4: np.int32}
+samples = np.frombuffer(raw_data, dtype=dtype_map[sample_width])
+
+# Reshape the array to have one row per audio channel
+samples = samples.reshape(-1, channels)
+
+# Normalize the samples to the range [-1, 1]
+#samples = samples / (2 ** (8 * sample_width - 1))
+
+#samples = samples.astype(np.float32)
+
+# Transpose the array so that the columns represent individual channels
+samples = samples.T
+
+data = samples[0,:]
+data = np.array(data)
+audio_sample = data.tolist()
+# %%
+import io
+bytes_io = io.BytesIO()
+
+with wave.open(bytes_io, 'wb') as wav_file:
+    wav_file.setnchannels(1)
+    wav_file.setsampwidth(2)
+    wav_file.setframerate(16000)
+    wav_file.writeframes(np.array(audio_sample, dtype=np.int16))
+
+# %%
 vad = BytesVAD.from_hparams(source="speechbrain/vad-crdnn-libriparty")
 # %%
+import torchaudio
 bytes_io.seek(0)
 vad.get_speech_segments(bytes_io)
 # %%
