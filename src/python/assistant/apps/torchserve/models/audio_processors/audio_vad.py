@@ -33,11 +33,12 @@ class AudioVADHandler(BaseHandler, ABC):
         properties = ctx.system_properties
         arch = properties.get('BASE_MODEL',BASE_MODEL)
         #model_dir = properties.get('model_dir')
-        self.device = 'cuda'
+        self.device = 'cuda:0'
         self.model = InMemoryVAD.from_hparams(
-            source=BASE_MODEL#,
-            #run_opts={"device":self.device}
+            source=BASE_MODEL,
+            run_opts={"device":self.device}
         )
+        self.model.device = self.device
 
         #self.model.to(self.device)
         self.model.eval()
@@ -75,6 +76,8 @@ class AudioVADHandler(BaseHandler, ABC):
             #mel = whisper.log_mel_spectrogram(inputs).to(self.model.device)
             speech_segments = self.model.get_speech_segments(inputs)
 
+        speech_segments = speech_segments.to('cpu')
+        
         prediction = speech_segments.numpy().tolist()
 
         return [prediction]
