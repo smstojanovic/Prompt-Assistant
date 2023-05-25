@@ -6,6 +6,7 @@ import json
 
 from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, SpeechT5HifiGan
 from ts.torch_handler.base_handler import BaseHandler
+from datasets import load_dataset
 
 BASE_MODEL = 'microsoft/speecht5_tts'
 VOCODER_MODEL = 'microsoft/speecht5_hifigan'
@@ -21,15 +22,17 @@ class TextSynthesizeHandler(BaseHandler, ABC):
         self.manifest = ctx.manifest
         #properties = ctx.system_properties
         
-        with open('voice_embeddings.json','r') as f:
-            voice_embedding = json.load(f)
+        # with open('voice_embeddings.json','r') as f:
+        #     voice_embedding = json.load(f)
 
-        voice_embedding = voice_embedding['voice_embedding']
+        # voice_embedding = voice_embedding['voice_embedding']
         self.device = 'cuda:0'
 
         self.processor = SpeechT5Processor.from_pretrained(BASE_MODEL)
         self.model = SpeechT5ForTextToSpeech.from_pretrained(BASE_MODEL)
         self.vocoder = SpeechT5HifiGan.from_pretrained(VOCODER_MODEL)
+
+        embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
 
         # move to device
         self.model.to(self.device)
@@ -40,7 +43,8 @@ class TextSynthesizeHandler(BaseHandler, ABC):
         self.vocoder.eval()
 
         # embeddings
-        self.speaker_embeddings = torch.tensor(voice_embedding, dtype=torch.float32).reshape(1,512)
+        #self.speaker_embeddings = torch.tensor(voice_embedding, dtype=torch.float32).reshape(1,512)
+        self.speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
         self.speaker_embeddings = self.speaker_embeddings.to(self.device)
 
         logger.debug('loaded model')
@@ -59,8 +63,9 @@ class TextSynthesizeHandler(BaseHandler, ABC):
         return inputs
 
     def inference(self, inputs):
+        spectrogram = self.model.generate_speech(inputs["input_ids"], self.speaker_embeddings)
+        
         with torch.no_grad():
-            spectrogram = self.model.generate_speech(inputs["input_ids"], self.speaker_embeddings)
             speech = self.vocoder(spectrogram)
 
         speech = speech.to('cpu')

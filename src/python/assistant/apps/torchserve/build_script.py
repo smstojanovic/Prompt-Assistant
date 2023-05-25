@@ -10,3 +10,5 @@ model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts")
 vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan")
 
 vad = VAD.from_hparams(source="speechbrain/vad-crdnn-libriparty")
+from datasets import load_dataset
+embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
