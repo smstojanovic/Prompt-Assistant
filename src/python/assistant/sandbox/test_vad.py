@@ -105,6 +105,7 @@ large_chunk, fs = torchaudio.load(
 VAD.get_speech_prob_file(bytes_io)
 # %%
 import torch
+import torchaudio
 from speechbrain.pretrained import split_path, fetch
 
 class BytesVAD(VAD):
@@ -551,7 +552,7 @@ vad = BytesVAD.from_hparams(source="speechbrain/vad-crdnn-libriparty")
 # %%
 import torchaudio
 bytes_io.seek(0)
-vad.get_speech_segments(bytes_io)
+speech_segments = vad.get_speech_segments(bytes_io)
 # %%
-
+speech_segments.numpy().tolist()
 # %%

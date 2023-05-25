@@ -6,6 +6,9 @@ class InMemoryVAD(VAD):
     """
         Extends Speechbrain VAD class; by allowing in-memory audio files
         instead of files loaded on disc. This will be used in Inference later.
+
+        This is a lazy (and inefficient) way to get this particular model setup 
+        for inference. If this pretrained model works well, it will be reworked.
     """
 
     def get_speech_prob_file(self,audio_file,large_chunk_size=30,small_chunk_size=10,overlap_small_chunk=False):
