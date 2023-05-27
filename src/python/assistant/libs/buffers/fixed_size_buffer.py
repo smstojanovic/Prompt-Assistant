@@ -33,6 +33,9 @@ class FixedSizeBuffer:
     def get(self, num_samples=None):
         # If num_samples is greater than buffer size or none, return the entire buffer
         if num_samples is None or num_samples >= self.buffer_size:
+            space_left = self.buffer_size - self.write_index
+            if space_left > 0:
+                return self.buffer[:self.write_index]
             return self.buffer
 
         # Copy samples from buffer to output array
@@ -54,6 +57,9 @@ class FixedSizeBuffer:
     def reset(self):
         self.buffer = np.zeros(self.buffer_size, dtype=self.dtype)
         self.write_index = 0
+
+    def is_enabled(self, **kwargs):
+        return True
 
 class FixedAudioBuffer(FixedSizeBuffer):
     """
