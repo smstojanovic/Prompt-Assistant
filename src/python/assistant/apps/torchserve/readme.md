@@ -13,4 +13,6 @@ torch-model-archiver --model-name "jenkins_listen" --version "1.0" --extra-files
 
 torch-model-archiver --model-name "jenkins_speak" --version "1.0" --extra-files "./voice_embeddings.json","./models/audio_processors/text_synthesizer.py" --handler "./models/jenkins_speak.py" --export-path model_store --force
 
+torch-model-archiver --model-name "jenkins_perceive" --version "1.0" --extra-files "./models/modifications/vad.py","./models/audio_processors/audio_vad.py" --handler "./models/jenkins_perceive.py" --export-path model_store --force
+
 torchserve --start --ts-config torchserve.config --model-store "model_store"

@@ -4,4 +4,5 @@ openai-whisper==20230314
 pyyaml
 transformers==4.29.1
 sentencepiece==0.1.99
+speechbrain==0.5.14
 datasets==2.12.0

@@ -67,7 +67,7 @@ class BufferWithQuiet:
 
     def get(self, num_samples=None):
         # Exclude the last quiet part of audio
-        return self.buffer[:self.quiet_index]
+        return self.buffer[:self.write_index]
 
     def reset(self):
         self.buffer = np.zeros(self.buffer_size, dtype=self.dtype)
@@ -96,4 +96,4 @@ class AudioBufferWithQuiet(BufferWithQuiet):
         return self.write_index/self.sample_rate*self.bytes_per_element/2
     
     def save(self, filename):
-        save_audio(self.buffer, filename, self.sample_rate)
+        save_audio(self.get(), filename, self.sample_rate)

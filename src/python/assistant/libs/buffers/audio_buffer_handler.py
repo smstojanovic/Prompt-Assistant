@@ -32,6 +32,9 @@ class SilenceBuffer:
     
     def save_audio(self, filename):
         return
+    
+    def is_enabled(self, **kwargs):
+        return False
 
 class AudioBufferHandler:
     """
@@ -58,8 +61,8 @@ class AudioBufferHandler:
     def get(self, num_samples=None):
         return self.buffers[self.mode].get(num_samples)
 
-    def is_enabled(self):
-        return self.buffers[self.mode].enabled
+    def is_enabled(self, **kwargs):
+        return self.buffers[self.mode].is_enabled(**kwargs)
 
     def ready(self):
         return self.buffers[self.mode].ready()
