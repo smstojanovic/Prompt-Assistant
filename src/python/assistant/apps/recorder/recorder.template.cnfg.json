@@ -1,0 +1,9 @@
+{
+    "torchserve" : {
+        "host" : "<hostname>",
+        "port" : "<port>"
+    },
+    "openai" : {
+        "api_key" : "<openai api key>"
+    }
+}

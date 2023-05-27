@@ -1,4 +1,5 @@
 import numpy as np
+from assistant.libs.buffers.audio_utils import save_audio
 
 class FixedSizeBuffer:
     """
@@ -32,6 +33,9 @@ class FixedSizeBuffer:
     def get(self, num_samples=None):
         # If num_samples is greater than buffer size or none, return the entire buffer
         if num_samples is None or num_samples >= self.buffer_size:
+            space_left = self.buffer_size - self.write_index
+            if space_left > 0:
+                return self.buffer[:self.write_index]
             return self.buffer
 
         # Copy samples from buffer to output array
@@ -43,6 +47,19 @@ class FixedSizeBuffer:
             samples[:self.buffer_size - samples_tail] = self.buffer[samples_tail:]
             samples[self.buffer_size - samples_tail:self.write_index - samples_tail] = self.buffer[:self.write_index - samples_tail]
             return samples
+        
+    def ready(self):
+        """
+            Used for prompting the listener. Only start working when buffer is full
+        """
+        return self.write_index >= self.buffer_size
+    
+    def reset(self):
+        self.buffer = np.zeros(self.buffer_size, dtype=self.dtype)
+        self.write_index = 0
+
+    def is_enabled(self, **kwargs):
+        return True
 
 class FixedAudioBuffer(FixedSizeBuffer):
     """
@@ -56,5 +73,12 @@ class FixedAudioBuffer(FixedSizeBuffer):
     """
     def __init__(self, buffer_time_seconds: int, sample_rate_hz: int, dtype=np.int16):
         bytes_per_element = dtype().itemsize
+        self.sample_rate_hz = sample_rate_hz
         buffer_size = int(buffer_time_seconds*sample_rate_hz/bytes_per_element*2)
         super().__init__(buffer_size, dtype)
+
+    def time_written(self):
+        return 3
+    
+    def save(self, filename):
+        save_audio(self.get(), filename, self.sample_rate)

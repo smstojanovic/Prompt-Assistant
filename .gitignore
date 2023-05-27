@@ -11,6 +11,9 @@
 *.cnfg.loc.json
 *.cnfg.tst.json
 *.cnfg.prd.json
+*.loc.cnfg.json
+*.tst.cnfg.json
+*.prd.cnfg.json
 
 # pycache
 __pycache__
