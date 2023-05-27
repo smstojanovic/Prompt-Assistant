@@ -4,10 +4,11 @@ import multiprocessing
 import pyaudio
 from assistant.libs.buffers.fixed_size_buffer import FixedAudioBuffer
 from assistant.libs.compression.audio_compressor import FLACAudioCompressor
-from assistant.apps.recorder.model_interface.ts_client import JenkinsPromptClient, JenkinsListenClient, JenkinsSpeechClient
+from assistant.apps.recorder.model_interface.ts_client import JenkinsPromptClient, JenkinsListenClient, JenkinsSpeechClient, JenkinsPerceiveClient
 from assistant.apps.recorder.prompt.prompt_discriminator import PromptDiscriminator
 from assistant.libs.buffers.audio_buffer_handler import BufferMode
 from assistant.apps.recorder.model_interface.chatgpt_interface import ChatGPTInterface
+from assistant.libs.buffers.audio_utils import save_audio
 import time
 from datetime import datetime
 import librosa
@@ -37,6 +38,7 @@ class AudioProcessor:
         self.do_compress=True
         self.prompt_client = JenkinsPromptClient()
         self.listen_client = JenkinsListenClient()
+        self.perceive_client = JenkinsPerceiveClient()
         self.speech_client = JenkinsSpeechClient()
         self.prompt_discriminator = PromptDiscriminator()
 
@@ -154,10 +156,35 @@ class AudioProcessor:
 
         # if the loop time is fast enough and everything is warmed up; start sending to model.
         if processing_time.seconds == 0 and processing_time.microseconds < 1e5:
+            resampled_int = resampled.astype(np.int16)
+            segment_input = resampled_int.tolist()
+            segments = self.perceive_client.do_inference(segment_input, self.do_compress)
+            # go through segments and check how long there's been no voice activity for.
+            max_end_time = 0
+            for segment in segments:
+                if segment[1] > max_end_time:
+                    max_end_time = segment[1]
+
+            if max_end_time == 0:
+                print('No Voice detected. Going back to Prompt Mode')
+                audio_buffer.reset()
+                audio_buffer.set_mode(BufferMode.PROMPT)
+                audio_buffer.reset()
+
+            # otherwise lets see how long till the last voice activity occured.
+            time_w_no_voice = audio_buffer.time_written() - max_end_time
+            # exit the loop if it's less than X seconds
+            # TODO, parameterise this!
+            if time_w_no_voice < 2.5:
+                return
+
+            # transcribe this.
             prompt_data = resampled.tolist()
             transcribed_speech = self.listen_client.do_inference(prompt_data, self.do_compress)
+            #audio_buffer.save('test_speak.wav')
             #is_prompt = self.prompt_discriminator.check_prompt(transcribed_speech)
             if transcribed_speech:
+                save_audio(resampled_int, 'test_speak_resampled.wav', 16000)
                 print('Thinking...')
                 audio_buffer.reset()
                 audio_buffer.set_mode(BufferMode.SILENCE)
