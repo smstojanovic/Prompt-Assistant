@@ -142,7 +142,7 @@ class AudioProcessor:
     def _process_listen(self, audio_buffer, target_sample_rate):
         loop_start_time = datetime.now()
 
-        if audio_buffer.is_enabled() and audio_buffer.time_written() < 5:
+        if audio_buffer.is_enabled() and audio_buffer.time_written() < 3:
             # still listening, wait till its not enabled
             return
             
@@ -184,7 +184,8 @@ class AudioProcessor:
             #audio_buffer.save('test_speak.wav')
             #is_prompt = self.prompt_discriminator.check_prompt(transcribed_speech)
             if transcribed_speech:
-                save_audio(resampled_int, 'test_speak_resampled.wav', 16000)
+                #save_audio(resampled_int, 'test_speak_resampled.wav', 16000)
+                print(transcribed_speech)
                 print('Thinking...')
                 audio_buffer.reset()
                 audio_buffer.set_mode(BufferMode.SILENCE)
@@ -199,6 +200,7 @@ class AudioProcessor:
         chatgpt_sentences = split_sentences(chatgpt_response)
         # add in text to speech model here and output to audio device
         for sentence in chatgpt_sentences:
+            print(sentence)
             audio_data = self.speech_client.do_inference(sentence)
             audio_output(**audio_data)
 
@@ -213,16 +215,22 @@ def audio_output(speech, sample_rate):
 
     channels = 1
 
+    silence_duration = 0.2  # Duration of silence in seconds
+    silence_length = int(sample_rate * silence_duration)  # Length of silence in samples
+
+    silence = np.zeros(silence_length, dtype=np.float32)
+    audio_data_with_silence = np.concatenate((audio_data, silence))
+
     # Open audio stream for playback
     stream = p.open(
-        format=p.get_format_from_width(audio_data.dtype.itemsize),
+        format=p.get_format_from_width(audio_data_with_silence.dtype.itemsize),
         channels=channels,
         rate=sample_rate,
         output=True
     )
 
     # Write audio data to the stream
-    stream.write(audio_data.tobytes())
+    stream.write(audio_data_with_silence.tobytes())
 
     # Wait for the stream to finish playing
     stream.stop_stream()
