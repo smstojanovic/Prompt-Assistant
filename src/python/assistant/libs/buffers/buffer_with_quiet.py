@@ -55,15 +55,15 @@ class BufferWithQuiet:
         self.quiet_index = max(0, self.write_index - self.quiet_buffer_size)
 
         # Check if the recent audio is below the quiet threshold
-        try:
-            main_rms = np.sqrt(np.mean(self.buffer[:self.quiet_index]**2))
-        except:
-            main_rms = self.max_amplitude
-        quiet_rms = np.sqrt(np.mean(self.buffer[self.quiet_index:self.write_index]**2))
+        # try:
+        #     main_rms = np.sqrt(np.mean(self.buffer[:self.quiet_index]**2))
+        # except:
+        #     main_rms = self.max_amplitude
+        # quiet_rms = np.sqrt(np.mean(self.buffer[self.quiet_index:self.write_index]**2))
         
-        if quiet_rms < main_rms * self.quiet_threshold and self.quiet_index >  0:
-            self.enabled = False
-            return
+        # if quiet_rms < main_rms * self.quiet_threshold and self.quiet_index >  0:
+        #     self.enabled = False
+        #     return
 
     def get(self, num_samples=None):
         # Exclude the last quiet part of audio
